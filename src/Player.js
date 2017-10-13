@@ -179,6 +179,12 @@ Player.prototype.steer = function() {
             }
         }
     }
+    if (this.stopped) {
+        audio.eating.stopLoop(true);
+    }
+    else {
+        audio.eating.startLoop(true);
+    }
 };
 
 

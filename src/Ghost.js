@@ -87,6 +87,7 @@ Ghost.prototype.reset = function() {
     // modes
     this.mode = this.startMode;
     this.scared = false;
+    audio.ghostReset();
 
     this.savedSigReverse = {};
     this.savedSigLeaveHome = {};
@@ -172,6 +173,7 @@ Ghost.prototype.reverse = function() {
 // for 3 seconds before traveling home uninterrupted.
 Ghost.prototype.goHome = function() {
     this.mode = GHOST_EATEN;
+    audio.ghostReturnToHome.play();
 };
 
 // Following the pattern that state changes be made via signaling (e.g. reversing, going home)
@@ -189,12 +191,15 @@ Ghost.prototype.onEnergized = function() {
     // only scare me if not already going home
     if (this.mode != GHOST_GOING_HOME && this.mode != GHOST_ENTERING_HOME) {
         this.scared = true;
+        audio.ghostTurnToBlue.play();
         this.targetting = undefined;
     }
 };
 
 // function called when this ghost gets eaten
 Ghost.prototype.onEaten = function() {
+    audio.eating.stop();
+    audio.eatingGhost.play();
     this.goHome();       // go home
     this.scared = false; // turn off scared
 };
@@ -219,6 +224,7 @@ Ghost.prototype.homeSteer = (function(){
             // walk to the door, or go through if already there
             if (this.pixel.x == map.doorPixel.x) {
                 this.mode = GHOST_ENTERING_HOME;
+                audio.ghostReturnToHome.stop();
                 this.setDir(DIR_DOWN);
                 this.faceDirEnum = this.dirEnum;
             }
