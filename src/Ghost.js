@@ -173,7 +173,6 @@ Ghost.prototype.reverse = function() {
 // for 3 seconds before traveling home uninterrupted.
 Ghost.prototype.goHome = function() {
     this.mode = GHOST_EATEN;
-    audio.ghostReturnToHome.play();
 };
 
 // Following the pattern that state changes be made via signaling (e.g. reversing, going home)
@@ -200,6 +199,7 @@ Ghost.prototype.onEnergized = function() {
 Ghost.prototype.onEaten = function() {
     audio.eating.stop();
     audio.eatingGhost.play();
+    setTimeout(audio.ghostReturnToHome.play(), 500);
     this.goHome();       // go home
     this.scared = false; // turn off scared
 };
