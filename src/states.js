@@ -139,6 +139,7 @@ var homeState = (function(){
     return {
         init: function() {
             menu.enable();
+            audio.silence();
             audio.coffeeBreakMusic.startLoop();
         },
         draw: function() {
@@ -491,7 +492,7 @@ var preNewGameState = (function() {
 
     return {
         init: function() {
-            audio.coffeeBreakMusic.stopLoop();
+            audio.silence();
             audio.startMusic.play();
             menu.enable();
             gameTitleState.init();
@@ -1163,7 +1164,7 @@ var newGameState = (function() {
 
     return {
         init: function() {
-            audio.coffeeBreakMusic.stopLoop();
+            audio.silence();
             clearCheats();
             frames = 0;
             level = startLevel-1;
@@ -1205,6 +1206,7 @@ var readyState =  (function(){
     
     return {
         init: function() {
+            audio.silence();
             audio.startMusic.play();
             var i;
             for (i=0; i<5; i++)
@@ -1503,8 +1505,8 @@ var deadState = (function() {
         triggers: {
             0: { // freeze
                 init: function() {
-                    audio.eating.stopLoop();
-                    audio.miss.play();
+                    audio.silence();
+                    audio.die.play();
                 },
                 update: function() {
                     var i;

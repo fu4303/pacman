@@ -11,6 +11,7 @@ var Player = function() {
     }
 
     this.nextDir = {};
+    this.lastMeal = { x:-1, y:-1 };
 
     // determines if this player should be AI controlled
     this.ai = false;
@@ -182,9 +183,6 @@ Player.prototype.steer = function() {
     if (this.stopped) {
         audio.eating.stopLoop(true);
     }
-    else {
-        audio.eating.startLoop(true);
-    }
 };
 
 
@@ -207,14 +205,16 @@ Player.prototype.update = function(j) {
 
     // eat something
     if (map) {
+        console.log(this.tile.x, this.lastMeal.x, this.tile.y, this.lastMeal.y);
         var t = map.getTile(this.tile.x, this.tile.y);
         if (t == '.' || t == 'o') {
-
+            this.lastMeal.x = this.tile.x;
+            this.lastMeal.y = this.tile.y
             // apply eating drag (unless in turbo mode)
             if (!turboMode) {
                 this.eatPauseFramesLeft = (t=='.') ? 1 : 3;
             }
-
+            audio.eating.startLoop(true);
             map.onDotEat(this.tile.x, this.tile.y);
             ghostReleaser.onDotEat();
             fruit.onDotEat();
@@ -222,6 +222,9 @@ Player.prototype.update = function(j) {
 
             if (t=='o')
                 energizer.activate();
+        }
+        if (t == ' ' && ! (this.lastMeal.x == this.tile.x && this.lastMeal.y == this.tile.y)) {
+            audio.eating.stopLoop(true);
         }
     }
 };

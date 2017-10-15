@@ -119,7 +119,7 @@ function preloadAudio() {
 
     this.credit            = new audioTrack('sounds/credit.mp3');
     this.coffeeBreakMusic  = new audioTrack('sounds/coffee-break-music.mp3');
-    this.miss              = new audioTrack('sounds/miss.mp3');
+    this.die               = new audioTrack('sounds/miss.mp3');
     this.ghostReturnToHome = new audioTrack('sounds/ghost-return-to-home.mp3');
     this.eatingGhost       = new audioTrack('sounds/eating-ghost.mp3');
     this.ghostTurnToBlue   = new audioTrack('sounds/ghost-turn-to-blue.mp3', 0.5);
@@ -134,8 +134,10 @@ function preloadAudio() {
     this.startMusic        = new audioTrack('sounds/start-music.mp3');
 
     this.ghostReset = function() {
+        console.log('***** ghostReset');
         for (var s in this) {
             if (s == 'silence' || s == 'ghostReset' ) return;
+            console.log('silencing: ' + s);
             if (s.match(/^ghost/)) this[s].stopLoop();
         }
     };
@@ -7579,6 +7581,7 @@ var GHOST_GOING_HOME = 2;
 var GHOST_ENTERING_HOME = 3;
 var GHOST_PACING_HOME = 4;
 var GHOST_LEAVING_HOME = 5;
+var ghostsOutside = 1;
 
 // Ghost constructor
 var Ghost = function() {
@@ -7743,6 +7746,10 @@ Ghost.prototype.reverse = function() {
 // set after the update() function is called so that we are still frozen
 // for 3 seconds before traveling home uninterrupted.
 Ghost.prototype.goHome = function() {
+    ghostsOutside--;
+    audio.silence();
+    audio.eatingGhost.play();
+    setTimeout(audio.ghostReturnToHome.play(), 500);
     this.mode = GHOST_EATEN;
 };
 
@@ -7750,8 +7757,19 @@ Ghost.prototype.goHome = function() {
 // the ghost is commanded to leave home similarly.
 // (not sure if this is correct yet)
 Ghost.prototype.leaveHome = function() {
+    ghostsOutside++;
+    this.playSiren();
     this.sigLeaveHome = true;
 };
+
+Ghost.prototype.playSiren = function() {
+    if (ghostsOutside > 0)
+        audio.ghostNormalMove.startLoop(true);
+}
+
+Ghost.prototype.stopSiren = function() {
+    audio.ghostNormalMove.stopLoop(true);   
+}
 
 // function called when pacman eats an energizer
 Ghost.prototype.onEnergized = function() {
@@ -7761,16 +7779,12 @@ Ghost.prototype.onEnergized = function() {
     // only scare me if not already going home
     if (this.mode != GHOST_GOING_HOME && this.mode != GHOST_ENTERING_HOME) {
         this.scared = true;
-        audio.ghostTurnToBlue.play();
         this.targetting = undefined;
     }
 };
 
 // function called when this ghost gets eaten
 Ghost.prototype.onEaten = function() {
-    audio.eating.stop();
-    audio.eatingGhost.play();
-    setTimeout(audio.ghostReturnToHome.play(), 500);
     this.goHome();       // go home
     this.scared = false; // turn off scared
 };
@@ -8031,6 +8045,7 @@ var Player = function() {
     }
 
     this.nextDir = {};
+    this.lastMeal = { x:-1, y:-1 };
 
     // determines if this player should be AI controlled
     this.ai = false;
@@ -8202,9 +8217,6 @@ Player.prototype.steer = function() {
     if (this.stopped) {
         audio.eating.stopLoop(true);
     }
-    else {
-        audio.eating.startLoop(true);
-    }
 };
 
 
@@ -8227,14 +8239,16 @@ Player.prototype.update = function(j) {
 
     // eat something
     if (map) {
+        console.log(this.tile.x, this.lastMeal.x, this.tile.y, this.lastMeal.y);
         var t = map.getTile(this.tile.x, this.tile.y);
         if (t == '.' || t == 'o') {
-
+            this.lastMeal.x = this.tile.x;
+            this.lastMeal.y = this.tile.y
             // apply eating drag (unless in turbo mode)
             if (!turboMode) {
                 this.eatPauseFramesLeft = (t=='.') ? 1 : 3;
             }
-
+            audio.eating.startLoop(true);
             map.onDotEat(this.tile.x, this.tile.y);
             ghostReleaser.onDotEat();
             fruit.onDotEat();
@@ -8242,6 +8256,9 @@ Player.prototype.update = function(j) {
 
             if (t=='o')
                 energizer.activate();
+        }
+        if (t == ' ' && ! (this.lastMeal.x == this.tile.x && this.lastMeal.y == this.tile.y)) {
+            audio.eating.stopLoop(true);
         }
     }
 };
@@ -8933,6 +8950,7 @@ var energizer = (function() {
         save: save,
         load: load,
         reset: function() {
+            audio.ghostTurnToBlue.stop();
             count = 0;
             active = false;
             points = 100;
@@ -8950,6 +8968,7 @@ var energizer = (function() {
             }
         },
         activate: function() { 
+            audio.ghostTurnToBlue.play();
             active = true;
             count = 0;
             points = 100;
@@ -9610,6 +9629,7 @@ var homeState = (function(){
     return {
         init: function() {
             menu.enable();
+            audio.silence();
             audio.coffeeBreakMusic.startLoop();
         },
         draw: function() {
@@ -9962,7 +9982,7 @@ var preNewGameState = (function() {
 
     return {
         init: function() {
-            audio.coffeeBreakMusic.stopLoop();
+            audio.silence();
             audio.startMusic.play();
             menu.enable();
             gameTitleState.init();
@@ -10634,7 +10654,7 @@ var newGameState = (function() {
 
     return {
         init: function() {
-            audio.coffeeBreakMusic.stopLoop();
+            audio.silence();
             clearCheats();
             frames = 0;
             level = startLevel-1;
@@ -10676,6 +10696,7 @@ var readyState =  (function(){
     
     return {
         init: function() {
+            audio.silence();
             audio.startMusic.play();
             var i;
             for (i=0; i<5; i++)
@@ -10974,8 +10995,8 @@ var deadState = (function() {
         triggers: {
             0: { // freeze
                 init: function() {
-                    audio.eating.stopLoop();
-                    audio.miss.play();
+                    audio.silence();
+                    audio.die.play();
                 },
                 update: function() {
                     var i;

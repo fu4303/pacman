@@ -54,7 +54,7 @@ function preloadAudio() {
 
     this.credit            = new audioTrack('sounds/credit.mp3');
     this.coffeeBreakMusic  = new audioTrack('sounds/coffee-break-music.mp3');
-    this.miss              = new audioTrack('sounds/miss.mp3');
+    this.die               = new audioTrack('sounds/miss.mp3');
     this.ghostReturnToHome = new audioTrack('sounds/ghost-return-to-home.mp3');
     this.eatingGhost       = new audioTrack('sounds/eating-ghost.mp3');
     this.ghostTurnToBlue   = new audioTrack('sounds/ghost-turn-to-blue.mp3', 0.5);
@@ -69,8 +69,10 @@ function preloadAudio() {
     this.startMusic        = new audioTrack('sounds/start-music.mp3');
 
     this.ghostReset = function() {
+        console.log('***** ghostReset');
         for (var s in this) {
             if (s == 'silence' || s == 'ghostReset' ) return;
+            console.log('silencing: ' + s);
             if (s.match(/^ghost/)) this[s].stopLoop();
         }
     };
