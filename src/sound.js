@@ -69,10 +69,8 @@ function preloadAudio() {
     this.startMusic        = new audioTrack('sounds/start-music.mp3');
 
     this.ghostReset = function() {
-        console.log('***** ghostReset');
         for (var s in this) {
             if (s == 'silence' || s == 'ghostReset' ) return;
-            console.log('silencing: ' + s);
             if (s.match(/^ghost/)) this[s].stopLoop();
         }
     };
