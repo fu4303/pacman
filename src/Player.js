@@ -205,7 +205,6 @@ Player.prototype.update = function(j) {
 
     // eat something
     if (map) {
-        console.log(this.tile.x, this.lastMeal.x, this.tile.y, this.lastMeal.y);
         var t = map.getTile(this.tile.x, this.tile.y);
         if (t == '.' || t == 'o') {
             this.lastMeal.x = this.tile.x;
