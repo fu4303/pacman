@@ -35,3 +35,5 @@ var newChildObject = function(parentObj, newObj) {
 
     return resultObj;
 };
+
+var DEBUG = false;

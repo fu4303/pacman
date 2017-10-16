@@ -60,6 +60,7 @@ var energizer = (function() {
         save: save,
         load: load,
         reset: function() {
+            audio.ghostTurnToBlue.stop();
             count = 0;
             active = false;
             points = 100;
@@ -77,6 +78,7 @@ var energizer = (function() {
             }
         },
         activate: function() { 
+            audio.ghostTurnToBlue.play();
             active = true;
             count = 0;
             points = 100;

@@ -8,6 +8,7 @@ var GHOST_GOING_HOME = 2;
 var GHOST_ENTERING_HOME = 3;
 var GHOST_PACING_HOME = 4;
 var GHOST_LEAVING_HOME = 5;
+var ghostsOutside = 1;
 
 // Ghost constructor
 var Ghost = function() {
@@ -87,6 +88,7 @@ Ghost.prototype.reset = function() {
     // modes
     this.mode = this.startMode;
     this.scared = false;
+    audio.ghostReset();
 
     this.savedSigReverse = {};
     this.savedSigLeaveHome = {};
@@ -171,6 +173,10 @@ Ghost.prototype.reverse = function() {
 // set after the update() function is called so that we are still frozen
 // for 3 seconds before traveling home uninterrupted.
 Ghost.prototype.goHome = function() {
+    ghostsOutside--;
+    audio.silence();
+    audio.eatingGhost.play();
+    setTimeout(audio.ghostReturnToHome.play(), 500);
     this.mode = GHOST_EATEN;
 };
 
@@ -178,8 +184,19 @@ Ghost.prototype.goHome = function() {
 // the ghost is commanded to leave home similarly.
 // (not sure if this is correct yet)
 Ghost.prototype.leaveHome = function() {
+    ghostsOutside++;
+    this.playSiren();
     this.sigLeaveHome = true;
 };
+
+Ghost.prototype.playSiren = function() {
+    if (ghostsOutside > 0)
+        audio.ghostNormalMove.startLoop(true);
+}
+
+Ghost.prototype.stopSiren = function() {
+    audio.ghostNormalMove.stopLoop(true);   
+}
 
 // function called when pacman eats an energizer
 Ghost.prototype.onEnergized = function() {
@@ -219,6 +236,7 @@ Ghost.prototype.homeSteer = (function(){
             // walk to the door, or go through if already there
             if (this.pixel.x == map.doorPixel.x) {
                 this.mode = GHOST_ENTERING_HOME;
+                audio.ghostReturnToHome.stop();
                 this.setDir(DIR_DOWN);
                 this.faceDirEnum = this.dirEnum;
             }

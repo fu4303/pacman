@@ -130,6 +130,7 @@ var homeState = (function(){
     menu.addTextIconButton("LEARN",
         function() {
             exitTo(learnState);
+            audio.silence();
         },
         function(ctx,x,y,frame) {
             atlas.drawGhostSprite(ctx,x,y,Math.floor(frame/8)%2,DIR_RIGHT,false,false,false,blinky.color);
@@ -138,6 +139,8 @@ var homeState = (function(){
     return {
         init: function() {
             menu.enable();
+            audio.silence();
+            audio.coffeeBreakMusic.startLoop();
         },
         draw: function() {
             renderer.clearMapFrame();
@@ -489,6 +492,8 @@ var preNewGameState = (function() {
 
     return {
         init: function() {
+            audio.silence();
+            audio.startMusic.play();
             menu.enable();
             gameTitleState.init();
             map = undefined;
@@ -1154,11 +1159,12 @@ var aboutState = (function(){
 
 var newGameState = (function() {
     var frames;
-    var duration = 2;
+    var duration = 0;
     var startLevel = 1;
 
     return {
         init: function() {
+            audio.silence();
             clearCheats();
             frames = 0;
             level = startLevel-1;
@@ -1196,10 +1202,12 @@ var newGameState = (function() {
 
 var readyState =  (function(){
     var frames;
-    var duration = 2;
+    var duration = 4;
     
     return {
         init: function() {
+            audio.silence();
+            audio.startMusic.play();
             var i;
             for (i=0; i<5; i++)
                 actors[i].reset();
@@ -1496,6 +1504,10 @@ var deadState = (function() {
         // script functions for each time
         triggers: {
             0: { // freeze
+                init: function() {
+                    audio.silence();
+                    audio.die.play();
+                },
                 update: function() {
                     var i;
                     for (i=0; i<4; i++) 

@@ -198,11 +198,13 @@ var initRenderer = function(){
             })(screenWidth, screenHeight, mapMargin);
 
             // draw fps
-            ctx.font = (tileSize-2) + "px ArcadeR";
-            ctx.textBaseline = "bottom";
-            ctx.textAlign = "right";
-            ctx.fillStyle = "#333";
-            ctx.fillText(Math.floor(executive.getFps())+" FPS", screenWidth, screenHeight);
+            if (DEBUG) {
+                ctx.font = (tileSize-2) + "px ArcadeR";
+                ctx.textBaseline = "bottom";
+                ctx.textAlign = "right";
+                ctx.fillStyle = "#333";
+                ctx.fillText(Math.floor(executive.getFps())+" FPS", screenWidth, screenHeight);
+            }
 
             // translate to map space
             ctx.translate(mapMargin+mapPad, mapMargin+mapPad);
