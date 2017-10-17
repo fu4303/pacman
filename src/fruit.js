@@ -52,6 +52,9 @@ BaseFruit.prototype = {
     testCollide: function() {
         if (this.isPresent() && this.isCollide()) {
             addScore(this.getPoints());
+            audio.silence(true);
+            audio.eatingFruit.play();
+            setTimeout(ghosts[0].playSounds, 500);
             this.reset();
             this.scoreFramesLeft = this.scoreDuration*60;
         }

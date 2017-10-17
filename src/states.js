@@ -9,6 +9,7 @@ var state;
 // switches to another game state
 var switchState = function(nextState,fadeDuration, continueUpdate1, continueUpdate2) {
     state = (fadeDuration) ? fadeNextState(state,nextState,fadeDuration,continueUpdate1, continueUpdate2) : nextState;
+    audio.silence();
     state.init();
     if (executive.isPaused()) {
         executive.togglePause();
@@ -130,7 +131,6 @@ var homeState = (function(){
     menu.addTextIconButton("LEARN",
         function() {
             exitTo(learnState);
-            audio.silence();
         },
         function(ctx,x,y,frame) {
             atlas.drawGhostSprite(ctx,x,y,Math.floor(frame/8)%2,DIR_RIGHT,false,false,false,blinky.color);
@@ -139,7 +139,6 @@ var homeState = (function(){
     return {
         init: function() {
             menu.enable();
-            audio.silence();
             audio.coffeeBreakMusic.startLoop();
         },
         draw: function() {
@@ -492,7 +491,6 @@ var preNewGameState = (function() {
 
     return {
         init: function() {
-            audio.silence();
             audio.startMusic.play();
             menu.enable();
             gameTitleState.init();
@@ -1164,7 +1162,6 @@ var newGameState = (function() {
 
     return {
         init: function() {
-            audio.silence();
             clearCheats();
             frames = 0;
             level = startLevel-1;
@@ -1206,7 +1203,6 @@ var readyState =  (function(){
     
     return {
         init: function() {
-            audio.silence();
             audio.startMusic.play();
             var i;
             for (i=0; i<5; i++)
@@ -1357,6 +1353,7 @@ var playState = {
                         ghosts[i].mode = GHOST_GOING_HOME;
                         ghosts[i].targetting = 'door';
                     }
+                    ghosts[0].playSounds();
             }
             
             if (!skip) {
@@ -1379,8 +1376,9 @@ var playState = {
 
                     // finish level if all dots have been eaten
                     if (map.allDotsEaten()) {
-                        //this.draw();
+                        //this.draw(); 
                         switchState(finishState);
+                        audio.extend.play();
                         break;
                     }
 
@@ -1505,7 +1503,6 @@ var deadState = (function() {
         triggers: {
             0: { // freeze
                 init: function() {
-                    audio.silence();
                     audio.die.play();
                 },
                 update: function() {

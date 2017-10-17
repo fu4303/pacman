@@ -133,19 +133,17 @@ function preloadAudio() {
     this.eating            = new audioTrack('sounds/eating.mp3', 0.5);
     this.startMusic        = new audioTrack('sounds/start-music.mp3');
 
-    this.ghostReset = function() {
-        console.log('***** ghostReset');
+    this.ghostReset = function(noResetTime) {
         for (var s in this) {
             if (s == 'silence' || s == 'ghostReset' ) return;
-            console.log('silencing: ' + s);
-            if (s.match(/^ghost/)) this[s].stopLoop();
+            if (s.match(/^ghost/)) this[s].stopLoop(noResetTime);
         }
     };
 
-    this.silence = function() {
+    this.silence = function(noResetTime) {
         for (var s in this) {
             if (s == 'silence' || s == 'ghostReset' ) return;
-            this[s].stopLoop();
+            this[s].stopLoop(noResetTime);
         }
     }
 }
@@ -7581,7 +7579,6 @@ var GHOST_GOING_HOME = 2;
 var GHOST_ENTERING_HOME = 3;
 var GHOST_PACING_HOME = 4;
 var GHOST_LEAVING_HOME = 5;
-var ghostsOutside = 1;
 
 // Ghost constructor
 var Ghost = function() {
@@ -7746,10 +7743,8 @@ Ghost.prototype.reverse = function() {
 // set after the update() function is called so that we are still frozen
 // for 3 seconds before traveling home uninterrupted.
 Ghost.prototype.goHome = function() {
-    ghostsOutside--;
     audio.silence();
     audio.eatingGhost.play();
-    setTimeout(audio.ghostReturnToHome.play(), 500);
     this.mode = GHOST_EATEN;
 };
 
@@ -7757,18 +7752,32 @@ Ghost.prototype.goHome = function() {
 // the ghost is commanded to leave home similarly.
 // (not sure if this is correct yet)
 Ghost.prototype.leaveHome = function() {
-    ghostsOutside++;
-    this.playSiren();
+    this.playSounds();
     this.sigLeaveHome = true;
 };
 
-Ghost.prototype.playSiren = function() {
-    if (ghostsOutside > 0)
-        audio.ghostNormalMove.startLoop(true);
-}
-
-Ghost.prototype.stopSiren = function() {
-    audio.ghostNormalMove.stopLoop(true);   
+Ghost.prototype.playSounds = function() {
+    var ghostsOutside = 0;
+    var ghostsGoingHome = 0;
+    for (var i=0; i<4; i++) {
+        if (ghosts[i].mode == GHOST_OUTSIDE)    ghostsOutside++;
+        if (ghosts[i].mode == GHOST_GOING_HOME) ghostsGoingHome++;
+    }
+    if (ghostsGoingHome > 0) {
+        audio.ghostNormalMove.stopLoop();
+        audio.ghostReturnToHome.startLoop(true);
+        return;
+    }
+    else {
+        audio.ghostReturnToHome.stopLoop();
+    }
+    if (ghostsOutside > 0 ) {
+        if (! this.scared)
+            audio.ghostNormalMove.startLoop(true);
+    }
+    else {
+        audio.ghostNormalMove.stopLoop();
+    }
 }
 
 // function called when pacman eats an energizer
@@ -7809,7 +7818,7 @@ Ghost.prototype.homeSteer = (function(){
             // walk to the door, or go through if already there
             if (this.pixel.x == map.doorPixel.x) {
                 this.mode = GHOST_ENTERING_HOME;
-                audio.ghostReturnToHome.stop();
+                this.playSounds();
                 this.setDir(DIR_DOWN);
                 this.faceDirEnum = this.dirEnum;
             }
@@ -8239,7 +8248,6 @@ Player.prototype.update = function(j) {
 
     // eat something
     if (map) {
-        console.log(this.tile.x, this.lastMeal.x, this.tile.y, this.lastMeal.y);
         var t = map.getTile(this.tile.x, this.tile.y);
         if (t == '.' || t == 'o') {
             this.lastMeal.x = this.tile.x;
@@ -8950,7 +8958,7 @@ var energizer = (function() {
         save: save,
         load: load,
         reset: function() {
-            audio.ghostTurnToBlue.stop();
+            audio.ghostTurnToBlue.stopLoop();
             count = 0;
             active = false;
             points = 100;
@@ -8968,7 +8976,8 @@ var energizer = (function() {
             }
         },
         activate: function() { 
-            audio.ghostTurnToBlue.play();
+            audio.ghostNormalMove.stopLoop();
+            audio.ghostTurnToBlue.startLoop();
             active = true;
             count = 0;
             points = 100;
@@ -9051,6 +9060,9 @@ BaseFruit.prototype = {
     testCollide: function() {
         if (this.isPresent() && this.isCollide()) {
             addScore(this.getPoints());
+            audio.silence(true);
+            audio.eatingFruit.play();
+            setTimeout(ghosts[0].playSounds, 500);
             this.reset();
             this.scoreFramesLeft = this.scoreDuration*60;
         }
@@ -9499,6 +9511,7 @@ var state;
 // switches to another game state
 var switchState = function(nextState,fadeDuration, continueUpdate1, continueUpdate2) {
     state = (fadeDuration) ? fadeNextState(state,nextState,fadeDuration,continueUpdate1, continueUpdate2) : nextState;
+    audio.silence();
     state.init();
     if (executive.isPaused()) {
         executive.togglePause();
@@ -9620,7 +9633,6 @@ var homeState = (function(){
     menu.addTextIconButton("LEARN",
         function() {
             exitTo(learnState);
-            audio.silence();
         },
         function(ctx,x,y,frame) {
             atlas.drawGhostSprite(ctx,x,y,Math.floor(frame/8)%2,DIR_RIGHT,false,false,false,blinky.color);
@@ -9629,7 +9641,6 @@ var homeState = (function(){
     return {
         init: function() {
             menu.enable();
-            audio.silence();
             audio.coffeeBreakMusic.startLoop();
         },
         draw: function() {
@@ -9982,7 +9993,6 @@ var preNewGameState = (function() {
 
     return {
         init: function() {
-            audio.silence();
             audio.startMusic.play();
             menu.enable();
             gameTitleState.init();
@@ -10654,7 +10664,6 @@ var newGameState = (function() {
 
     return {
         init: function() {
-            audio.silence();
             clearCheats();
             frames = 0;
             level = startLevel-1;
@@ -10696,7 +10705,6 @@ var readyState =  (function(){
     
     return {
         init: function() {
-            audio.silence();
             audio.startMusic.play();
             var i;
             for (i=0; i<5; i++)
@@ -10847,6 +10855,7 @@ var playState = {
                         ghosts[i].mode = GHOST_GOING_HOME;
                         ghosts[i].targetting = 'door';
                     }
+                    ghosts[0].playSounds();
             }
             
             if (!skip) {
@@ -10869,8 +10878,9 @@ var playState = {
 
                     // finish level if all dots have been eaten
                     if (map.allDotsEaten()) {
-                        //this.draw();
+                        //this.draw(); 
                         switchState(finishState);
+                        audio.extend.play();
                         break;
                     }
 
@@ -10995,7 +11005,6 @@ var deadState = (function() {
         triggers: {
             0: { // freeze
                 init: function() {
-                    audio.silence();
                     audio.die.play();
                 },
                 update: function() {
@@ -11416,8 +11425,11 @@ var playCutScene = function(cutScene, nextState) {
     map = undefined;
     renderer.drawMap(true);
 
+    // miss the audio silence and time it cleanly for pacman cut scene 1
+    setTimeout(audio.coffeeBreakMusic.startLoop, 1200);
     cutScene.nextState = nextState;
     switchState(cutScene, 60);
+
 };
 
 var pacmanCutscene1 = newChildObject(scriptState, {
