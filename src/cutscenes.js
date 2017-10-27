@@ -8,8 +8,11 @@ var playCutScene = function(cutScene, nextState) {
     map = undefined;
     renderer.drawMap(true);
 
+    // miss the audio silence and time it cleanly for pacman cut scene 1
+    setTimeout(audio.coffeeBreakMusic.startLoop, 1200);
     cutScene.nextState = nextState;
     switchState(cutScene, 60);
+
 };
 
 var pacmanCutscene1 = newChildObject(scriptState, {

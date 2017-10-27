@@ -68,17 +68,17 @@ function preloadAudio() {
     this.eating            = new audioTrack('sounds/eating.mp3', 0.5);
     this.startMusic        = new audioTrack('sounds/start-music.mp3');
 
-    this.ghostReset = function() {
+    this.ghostReset = function(noResetTime) {
         for (var s in this) {
             if (s == 'silence' || s == 'ghostReset' ) return;
-            if (s.match(/^ghost/)) this[s].stopLoop();
+            if (s.match(/^ghost/)) this[s].stopLoop(noResetTime);
         }
     };
 
-    this.silence = function() {
+    this.silence = function(noResetTime) {
         for (var s in this) {
             if (s == 'silence' || s == 'ghostReset' ) return;
-            this[s].stopLoop();
+            this[s].stopLoop(noResetTime);
         }
     }
 }

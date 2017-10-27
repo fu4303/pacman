@@ -8,7 +8,6 @@ var GHOST_GOING_HOME = 2;
 var GHOST_ENTERING_HOME = 3;
 var GHOST_PACING_HOME = 4;
 var GHOST_LEAVING_HOME = 5;
-var ghostsOutside = 1;
 
 // Ghost constructor
 var Ghost = function() {
@@ -173,10 +172,8 @@ Ghost.prototype.reverse = function() {
 // set after the update() function is called so that we are still frozen
 // for 3 seconds before traveling home uninterrupted.
 Ghost.prototype.goHome = function() {
-    ghostsOutside--;
     audio.silence();
     audio.eatingGhost.play();
-    setTimeout(audio.ghostReturnToHome.play(), 500);
     this.mode = GHOST_EATEN;
 };
 
@@ -184,18 +181,32 @@ Ghost.prototype.goHome = function() {
 // the ghost is commanded to leave home similarly.
 // (not sure if this is correct yet)
 Ghost.prototype.leaveHome = function() {
-    ghostsOutside++;
-    this.playSiren();
+    this.playSounds();
     this.sigLeaveHome = true;
 };
 
-Ghost.prototype.playSiren = function() {
-    if (ghostsOutside > 0)
-        audio.ghostNormalMove.startLoop(true);
-}
-
-Ghost.prototype.stopSiren = function() {
-    audio.ghostNormalMove.stopLoop(true);   
+Ghost.prototype.playSounds = function() {
+    var ghostsOutside = 0;
+    var ghostsGoingHome = 0;
+    for (var i=0; i<4; i++) {
+        if (ghosts[i].mode == GHOST_OUTSIDE)    ghostsOutside++;
+        if (ghosts[i].mode == GHOST_GOING_HOME) ghostsGoingHome++;
+    }
+    if (ghostsGoingHome > 0) {
+        audio.ghostNormalMove.stopLoop();
+        audio.ghostReturnToHome.startLoop(true);
+        return;
+    }
+    else {
+        audio.ghostReturnToHome.stopLoop();
+    }
+    if (ghostsOutside > 0 ) {
+        if (! this.scared)
+            audio.ghostNormalMove.startLoop(true);
+    }
+    else {
+        audio.ghostNormalMove.stopLoop();
+    }
 }
 
 // function called when pacman eats an energizer
@@ -236,7 +247,7 @@ Ghost.prototype.homeSteer = (function(){
             // walk to the door, or go through if already there
             if (this.pixel.x == map.doorPixel.x) {
                 this.mode = GHOST_ENTERING_HOME;
-                audio.ghostReturnToHome.stop();
+                this.playSounds();
                 this.setDir(DIR_DOWN);
                 this.faceDirEnum = this.dirEnum;
             }
