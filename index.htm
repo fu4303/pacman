@@ -40,33 +40,40 @@
 	* {box-sizing: border-box}
 
 	.container {
-	    position: relative;
-	    width: 50%;
-	    max-width: 300px;
+	    position: absolute;
+	    top: 0;
+	    left: 0;	    
+	    width: 100%;	    
+	    text-align: center;
 	}
 	.image {
-	    display: block;
+            position: absolute;
 	    width: 100%;
+	    max-width: 125px;
 	    height: auto;
-	    margin-top: 10%;
-	    margin-left: 50%;
+	    left: 0;
+	    top: 0;
+	    margin-top: 2%;
+	    margin-left: 46%;
 	    margin-right: 50%;
-	}
-	.container:hover .overlay {
-	    top: 0px;
-	    opacity: 1;
+	    opacity: 0.5;
+            z-index: 10;
 	}
     </style>
 
     <script src="pacman.js"> </script>
 
+
 </head>
 
 <body>
+<div id='container'> <a href="https://tokensoft.io" target="_blank"><img src="./icon/logo_white.png" alt="Avatar" class="image"></a> 
+</div>
+
     <div style='font-family: ArcadeR'> </div>
-    <div class="container"><a href="https://tokensoft.io" target="_blank"><img src="./icon/logo_white.png" alt="Avatar" class="image"></a> </div>
     <canvas id='canvas'><div id="canvas-warning">Your browser does not support HTML Canvas.  Please upgrade!</div></canvas>
     <canvas id='atlas' style="display:none"></canvas>
+
 </body>
 
 <script>
