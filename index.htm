@@ -37,16 +37,45 @@
             color: #FF0;
             font-size: 1.5em;
         }
+	* {box-sizing: border-box}
+
+	.container {
+	    position: relative;
+	    width: 50%;
+	    max-width: 300px;
+	}
+	.image {
+	    display: block;
+	    width: 100%;
+	    height: auto;
+	    margin-top: 10%;
+	    margin-left: 50%;
+	    margin-right: 50%;
+	}
+	.container:hover .overlay {
+	    top: 0px;
+	    opacity: 1;
+	}
     </style>
 
-    <script src="pacman.js"></script>
+    <script src="pacman.js"> </script>
 
 </head>
 
 <body>
     <div style='font-family: ArcadeR'> </div>
+    <div class="container"><a href="https://tokensoft.io" target="_blank"><img src="./icon/logo_white.png" alt="Avatar" class="image"></a> </div>
     <canvas id='canvas'><div id="canvas-warning">Your browser does not support HTML Canvas.  Please upgrade!</div></canvas>
     <canvas id='atlas' style="display:none"></canvas>
 </body>
+
+<script>
+window.addEventListener("keydown", function(e) {
+    // space and arrow keys
+    if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+        e.preventDefault();
+    }
+}, false);
+</script>
 
 </html>
