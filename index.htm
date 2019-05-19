@@ -37,37 +37,12 @@
             color: #FF0;
             font-size: 1.5em;
         }
-	* {box-sizing: border-box}
-
-	.container {
-	    position: absolute;
-	    top: 0;
-	    left: 0;	    
-	    width: 100%;	    
-	    text-align: center;
-	}
-	.image {
-            position: absolute;
-	    width: 100%;
-	    max-width: 125px;
-	    height: auto;
-	    left: 0;
-	    top: 0;
-	    margin-top: 1%;
-	    margin-left: 46%;
-	    margin-right: 50%;
-	    opacity: 0.5;
-            z-index: 10;
-	}
     </style>
-
-    <script src="pacman.js"> </script>
-
 
 </head>
 
 <body>
-<div id='container'> <a href="https://tokensoft.io" target="_blank"><img src="./icon/logo_white.png" alt="Avatar" class="image"></a> 
+
 </div>
 
     <div style='font-family: ArcadeR'> </div>
@@ -75,14 +50,5 @@
     <canvas id='atlas' style="display:none"></canvas>
 
 </body>
-
-<script>
-window.addEventListener("keydown", function(e) {
-    // space and arrow keys
-    if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
-        e.preventDefault();
-    }
-}, false);
-</script>
 
 </html>
